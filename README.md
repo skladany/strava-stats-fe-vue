@@ -6,7 +6,7 @@ Refactoring [Strava Stats FE](https://github.com/skladany/strava-stats-fe) to us
 
 ## Todo
 
-- [x] Move props to data/computer properties
+- [x] Move props to data/computed properties
 - [ ] Set up event handlers
 - [ ] Get styles working
 - [ ] Clean up and split components
