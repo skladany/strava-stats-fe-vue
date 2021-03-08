@@ -4,26 +4,31 @@
     <div class="progress-bar">
       <div class="bar" style=""></div>
       <p>
-        <strong>{currentMiles}</strong> of <strong>{mileageGoal}</strong> 🏁
-        miles.
+        <strong>{{ currentMiles }}</strong> of
+        <strong>{{ mileageGoal }}</strong> 🏁 miles.
       </p>
     </div>
     <h2 id="goal-status" class="{mileageGoalComplete}">
       🎉 You did it!!! 🎉
     </h2>
     <p>
-      You are <strong>{currPace()}</strong> miles off your yearly goal pace of
-      <strong>{goalPace()}</strong>.
+      You are <strong>{{ currPace }}</strong> miles off your yearly goal pace of
+      <strong>{{ goalPace }}</strong
+      >.
     </p>
-    <p>You have <strong>{daysLeft()}</strong> days left to hit your goal!</p>
-    <p>Run <strong>{milesPerDay()}</strong> miles a day to hit your goal!</p>
+    <p>
+      You have <strong>{{ daysLeft }}</strong> days left to hit your goal!
+    </p>
+    <p>
+      Run <strong>{{ milesPerDay }}</strong> miles a day to hit your goal!
+    </p>
     <p>&hellip;</p>
     <p>
-      <strong>{currentWeeklyMiles}</strong> of
-      <strong>{weeklyMileageGoal}</strong> weekly miles.
+      <strong>{{ currentWeeklyMiles }}</strong> of
+      <strong>{{ weeklyMileageGoal }}</strong> weekly miles.
       <br />
       <strong>
-        {parseFloat(weeklyMileageGoal - currentWeeklyMiles).toFixed(2)}
+        {{ weeklyMilesLeft }}
       </strong>
       to go!!!
     </p>
@@ -35,6 +40,8 @@
 </template>
 
 <script>
+import testData from "./data/testData";
+
 const ATHLETE = window.location.hostname.includes("ashley")
   ? "ashley"
   : "steve";
@@ -45,6 +52,30 @@ const ENDPOINT = `https://api-postal-run.herokuapp.com`;
 const capitalize = (s) => {
   if (typeof s !== "string") return "";
   return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const metersToMiles = (meters) => {
+  return (meters * 0.000621371).toFixed(2);
+};
+
+const currDayNumber = () => {
+  const today = new Date();
+  const day = Math.ceil(
+    (today - new Date(today.getFullYear(), 0, 1)) / 86400000
+  );
+
+  return day;
+};
+
+// Get the start of the week, given the current date
+// https://www.w3resource.com/javascript-exercises/javascript-date-exercise-50.php
+const startOfWeek = (date) => {
+  const day = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
+
+  date.setDate(day);
+  date.setHours(0, 0, 0, 0);
+
+  return new Date(date);
 };
 
 export default {
@@ -65,14 +96,74 @@ export default {
         ? `👟 ${athlete} Runs the World! 🏃‍♂️`
         : `🦄 ${athlete} Runs the World! 🏃‍♀️`;
     },
+    currentMiles: function() {
+      const distance = this.runData.reduce((totalDistance, { distance }) => {
+        return totalDistance + distance;
+      }, 0);
+
+      return metersToMiles(distance);
+    },
+    mileageGoal: function() {
+      return 2021;
+    },
+    daysLeft: function() {
+      const today = new Date();
+      const day = Math.floor(
+        (new Date(today.getFullYear() + 1, 0, 1) - today) / 86400000
+      );
+
+      return day;
+    },
+    goalPace: function() {
+      // Ideal Pace
+      const milesPerDay = this.mileageGoal / (currDayNumber() + this.daysLeft);
+      const goalPace = currDayNumber() * milesPerDay;
+
+      return goalPace.toFixed(2);
+    },
+    currPace: function() {
+      return (this.goalPace - this.currentMiles).toFixed(2);
+    },
+    milesPerDay: function() {
+      return parseFloat(
+        (this.mileageGoal - this.currentMiles) / this.daysLeft
+      ).toFixed(2);
+    },
+    currentWeeklyMiles: function() {
+      const today = new Date();
+      const monday = startOfWeek(today);
+
+      const thisWeek = this.runData
+        .filter(({ start_date }) => {
+          // @todo this is UTC time, need to account for timezones eventually
+          // ...but generally close enough for now
+          const activityDate = new Date(start_date);
+
+          return activityDate > monday;
+        })
+        .reduce((totalDistance, { distance }) => {
+          return totalDistance + distance;
+        }, 0);
+
+      return metersToMiles(thisWeek);
+    },
+    weeklyMileageGoal: function() {
+      const weeklyGoal = parseInt(localStorage.getItem("weeklyGoal")) || 40;
+      return weeklyGoal;
+    },
+    weeklyMilesLeft: function() {
+      return parseFloat(
+        this.weeklyMileageGoal - this.currentWeeklyMiles
+      ).toFixed(2);
+    },
   },
   methods: {
     fetchData: async function() {
       try {
         let page = 1;
 
-        if (process.env.NODE_ENV === "_development") {
-          //runData = testData;
+        if (process.env.NODE_ENV === "development") {
+          this.runData = testData;
         } else {
           /* eslint-disable no-constant-condition */
           while (true) {
@@ -89,7 +180,6 @@ export default {
             page++;
           } // end while
           /* eslint-enable no-constant-condition */
-          console.log(this.runData);
         }
       } catch (e) {
         console.log(e);
