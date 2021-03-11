@@ -1,0 +1,78 @@
+.App {
+  text-align: center;
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(7px + 1vmin);
+  color: white;
+  padding: 0 24px;
+}
+
+.App-link {
+  color: #09d3ac;
+}
+
+h1 {
+  font-size: calc(15px + 2vmin);
+}
+
+div.toggles button {
+  background-color: transparent;
+  border: 3px dotted transparent;
+  border-radius: 10vmin;
+  padding: 0 6px;
+  margin: 6px;
+  font-size: calc(24px + 2vmin);
+}
+
+div.toggles button:hover {
+  border-color: hotpink;
+  cursor: pointer;
+}
+
+p {
+  font-size: calc(8px + 2vmin);
+  margin: 12px 0;
+}
+
+strong {
+  color: hotpink;
+}
+
+.progress-bar {
+  position: relative;
+  width: 70vw;
+  height: 50px;
+  border: 1px solid hotpink;
+  z-index: 0;
+  margin-bottom: 16px;
+}
+
+.progress-bar .bar {
+  left: 0;
+  position: absolute;
+  content: " ";
+  width: 0;
+  height: 50px;
+  background-color: rgb(118, 27, 169);
+  transition: ease-in 1s;
+  z-index: -1;
+}
+
+.progress-bar.animate.bar {
+  width: 50%;
+}
+
+#goal-status {
+  transform: scale(0);
+  transition: ease-in 0.4s;
+  margin: 0 auto;
+}
+
+#goal-status.goal-complete {
+  transform: scale(1.25) rotate(360deg);
+  margin: 22px auto;
+}

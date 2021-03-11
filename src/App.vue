@@ -1,40 +1,45 @@
 <template>
   <div id="app">
     <h1>{{ headline }}</h1>
-    <div class="progress-bar">
-      <div class="bar" style=""></div>
-      <p>
-        <strong>{{ currentMiles }}</strong> of
-        <strong>{{ mileageGoal }}</strong> 🏁 miles.
-      </p>
+    <div v-if="isLoading">
+      <img src="/loading.gif" />
     </div>
-    <h2 id="goal-status" class="{mileageGoalComplete}">
-      🎉 You did it!!! 🎉
-    </h2>
-    <p>
-      You are <strong>{{ currPace }}</strong> miles off your yearly goal pace of
-      <strong>{{ goalPace }}</strong
-      >.
-    </p>
-    <p>
-      You have <strong>{{ daysLeft }}</strong> days left to hit your goal!
-    </p>
-    <p>
-      Run <strong>{{ milesPerDay }}</strong> miles a day to hit your goal!
-    </p>
-    <p>&hellip;</p>
-    <p>
-      <strong>{{ currentWeeklyMiles }}</strong> of
-      <strong>{{ weeklyMileageGoal }}</strong> weekly miles.
-      <br />
-      <strong>
-        {{ weeklyMilesLeft }}
-      </strong>
-      to go!!!
-    </p>
-    <div className="toggles">
-      <button @click="toggleMileage(-1)">👇</button>
-      <button @click="toggleMileage(1)">👆</button>
+    <div v-else>
+      <div class="progress-bar">
+        <div class="bar" style=""></div>
+        <p>
+          <strong>{{ currentMiles }}</strong> of
+          <strong>{{ mileageGoal }}</strong> 🏁 miles.
+        </p>
+      </div>
+      <h2 id="goal-status" class="{mileageGoalComplete}">
+        🎉 You did it!!! 🎉
+      </h2>
+      <p>
+        You are <strong>{{ currPace }}</strong> miles off your yearly goal pace
+        of <strong>{{ goalPace }}</strong
+        >.
+      </p>
+      <p>
+        You have <strong>{{ daysLeft }}</strong> days left to hit your goal!
+      </p>
+      <p>
+        Run <strong>{{ milesPerDay }}</strong> miles a day to hit your goal!
+      </p>
+      <p>&hellip;</p>
+      <p>
+        <strong>{{ currentWeeklyMiles }}</strong> of
+        <strong>{{ weeklyMileageGoal }}</strong> weekly miles.
+        <br />
+        <strong>
+          {{ weeklyMilesLeft }}
+        </strong>
+        to go!!!
+      </p>
+      <div className="toggles">
+        <button @click="toggleMileage(-1)">👇</button>
+        <button @click="toggleMileage(1)">👆</button>
+      </div>
     </div>
   </div>
 </template>
@@ -83,6 +88,7 @@ export default {
   data: function() {
     return {
       runData: [],
+      isLoading: true,
       weeklyMileageGoal: 0,
     };
   },
@@ -149,13 +155,18 @@ export default {
 
       return metersToMiles(thisWeek);
     },
+    weeklyMilesLeft: function() {
+      return parseFloat(
+        this.weeklyMileageGoal - this.currentWeeklyMiles
+      ).toFixed(2);
+    },
   },
   methods: {
     fetchData: async function() {
       try {
         let page = 1;
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "_development") {
           this.runData = testData;
         } else {
           /* eslint-disable no-constant-condition */
@@ -173,6 +184,8 @@ export default {
             page++;
           } // end while
           /* eslint-enable no-constant-condition */
+
+          this.isLoading = false;
         }
       } catch (e) {
         console.log(e);
