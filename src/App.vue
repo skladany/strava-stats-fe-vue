@@ -33,8 +33,8 @@
       to go!!!
     </p>
     <div className="toggles">
-      <button>👇</button>
-      <button>👆</button>
+      <button @click="toggleMileage(-1)">👇</button>
+      <button @click="toggleMileage(1)">👆</button>
     </div>
   </div>
 </template>
@@ -83,10 +83,12 @@ export default {
   data: function() {
     return {
       runData: [],
+      weeklyMileageGoal: 0,
     };
   },
   created: function() {
     this.fetchData();
+    this.getWeeklyMileageGoal();
   },
   computed: {
     headline: function() {
@@ -147,15 +149,6 @@ export default {
 
       return metersToMiles(thisWeek);
     },
-    weeklyMileageGoal: function() {
-      const weeklyGoal = parseInt(localStorage.getItem("weeklyGoal")) || 40;
-      return weeklyGoal;
-    },
-    weeklyMilesLeft: function() {
-      return parseFloat(
-        this.weeklyMileageGoal - this.currentWeeklyMiles
-      ).toFixed(2);
-    },
   },
   methods: {
     fetchData: async function() {
@@ -184,6 +177,16 @@ export default {
       } catch (e) {
         console.log(e);
       }
+    },
+    getWeeklyMileageGoal: function() {
+      const weeklyGoal = parseInt(localStorage.getItem("weeklyGoal")) || 40;
+      this.weeklyMileageGoal = weeklyGoal;
+    },
+    toggleMileage: function(mile) {
+      const weeklyGoal =
+        this.weeklyMileageGoal + mile > 0 ? this.weeklyMileageGoal + mile : 0;
+      this.weeklyMileageGoal = weeklyGoal;
+      localStorage.setItem("weeklyGoal", weeklyGoal);
     },
   },
 };
