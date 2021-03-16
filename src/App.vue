@@ -6,7 +6,7 @@
     </div>
     <div v-else>
       <div class="progress-bar">
-        <div class="bar" style=""></div>
+        <div class="bar" :style="{ width: progressBar }"></div>
         <p>
           <strong>{{ currentMiles }}</strong> of
           <strong>{{ mileageGoal }}</strong> 🏁 miles.
@@ -36,7 +36,7 @@
         </strong>
         to go!!!
       </p>
-      <div className="toggles">
+      <div class="toggles">
         <button @click="toggleMileage(-1)">👇</button>
         <button @click="toggleMileage(1)">👆</button>
       </div>
@@ -89,12 +89,16 @@ export default {
     return {
       runData: [],
       isLoading: true,
+      progressBarWidth: "0%",
       weeklyMileageGoal: 0,
     };
   },
   created: function() {
     this.fetchData();
     this.getWeeklyMileageGoal();
+    setTimeout(() => {
+      this.setProgressBarWidth();
+    }, 1000);
   },
   computed: {
     headline: function() {
@@ -112,7 +116,7 @@ export default {
       return metersToMiles(distance);
     },
     mileageGoal: function() {
-      return 2021;
+      return 200;
     },
     daysLeft: function() {
       const today = new Date();
@@ -160,13 +164,16 @@ export default {
         this.weeklyMileageGoal - this.currentWeeklyMiles
       ).toFixed(2);
     },
+    progressBar: function() {
+      return this.progressBarWidth;
+    },
   },
   methods: {
     fetchData: async function() {
       try {
         let page = 1;
 
-        if (process.env.NODE_ENV === "_development") {
+        if (process.env.NODE_ENV === "development") {
           this.runData = testData;
         } else {
           /* eslint-disable no-constant-condition */
@@ -184,9 +191,8 @@ export default {
             page++;
           } // end while
           /* eslint-enable no-constant-condition */
-
-          this.isLoading = false;
         }
+        this.isLoading = false;
       } catch (e) {
         console.log(e);
       }
@@ -201,17 +207,11 @@ export default {
       this.weeklyMileageGoal = weeklyGoal;
       localStorage.setItem("weeklyGoal", weeklyGoal);
     },
+    setProgressBarWidth: function() {
+      this.progressBarWidth = `40%`;
+    },
   },
 };
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style></style>
