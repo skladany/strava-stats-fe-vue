@@ -12,7 +12,7 @@
           <strong>{{ mileageGoal }}</strong> 🏁 miles.
         </p>
       </div>
-      <h2 id="goal-status" class="{mileageGoalComplete}">
+      <h2 id="goal-status" :class="goalComplete">
         🎉 You did it!!! 🎉
       </h2>
       <p>
@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import confetti from "canvas-confetti";
 import testData from "./data/testData";
 
 const ATHLETE = window.location.hostname.includes("ashley")
@@ -83,6 +84,39 @@ const startOfWeek = (date) => {
   return new Date(date);
 };
 
+const shootConfetti = () => {
+  var duration = 10 * 1000;
+  var animationEnd = Date.now() + duration;
+  var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  var interval = setInterval(function() {
+    var timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    var particleCount = 50 * (timeLeft / duration);
+    // since particles fall down, start a bit higher than random
+    confetti(
+      Object.assign({}, defaults, {
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      })
+    );
+    confetti(
+      Object.assign({}, defaults, {
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+      })
+    );
+  }, 250);
+};
+
 export default {
   name: "App",
   data: function() {
@@ -91,11 +125,14 @@ export default {
       isLoading: true,
       progressBarWidth: "0%",
       weeklyMileageGoal: 0,
+      goalComplete: "",
     };
   },
   created: function() {
     this.fetchData();
     this.getWeeklyMileageGoal();
+  },
+  updated: function() {
     setTimeout(() => {
       this.setProgressBarWidth();
     }, 1000);
@@ -116,7 +153,7 @@ export default {
       return metersToMiles(distance);
     },
     mileageGoal: function() {
-      return 200;
+      return 2021;
     },
     daysLeft: function() {
       const today = new Date();
@@ -208,7 +245,15 @@ export default {
       localStorage.setItem("weeklyGoal", weeklyGoal);
     },
     setProgressBarWidth: function() {
-      this.progressBarWidth = `40%`;
+      let progress = ((this.currentMiles / this.mileageGoal) * 100).toFixed(2);
+      this.progressBarWidth = `${progress}%`;
+
+      if (progress >= 100) {
+        setTimeout(() => {
+          this.goalComplete = "goal-complete";
+          shootConfetti();
+        }, 1150);
+      }
     },
   },
 };
